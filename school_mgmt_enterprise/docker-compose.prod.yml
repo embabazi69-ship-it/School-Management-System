@@ -1,0 +1,32 @@
+
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: schooldb
+    volumes:
+      - db_data:/var/lib/postgresql/data
+  web:
+    build: .
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/schooldb
+      SECRET_KEY: replace-with-secure
+    volumes:
+      - ./:/app
+  nginx:
+    image: nginx:stable
+    ports:
+      - "80:80"
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./app/static:/usr/share/nginx/html/static:ro
+    depends_on:
+      - web
+
+volumes:
+  db_data:
